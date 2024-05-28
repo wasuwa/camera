@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useEffect } from 'react'
-import Image from 'next/image';
 import Webcam from "react-webcam";
 import { useCamera } from '@/hooks/useCamera';
 
@@ -11,19 +10,24 @@ const videoConstraints = {
   facingMode: "user"
 };
 
-const INTERVAL = 500;
+const INTERVAL = 5000;
 
 export const Camera = () => {
-  const { webcamRef, capture, imageUrls } = useCamera()
+  const { webcamRef, capture, stopCamera, imageUrls } = useCamera()
 
   useEffect(() => {
     const interval = setInterval(() => {
-      capture()
+      capture();
+      const shouldSendImage = !!imageUrls.length && imageUrls.length % 10 === 0
+      if (shouldSendImage) {
+        // 送信
+      }
     }, INTERVAL)
     return () => {
       clearInterval(interval)
+      stopCamera()
     }
-  })
+  }, [])
 
   return (
     <div>
@@ -32,11 +36,8 @@ export const Camera = () => {
         screenshotFormat='image/jpeg'
         videoConstraints={videoConstraints}
         ref={webcamRef}
-        className='opacity-0'
+        className='absolute top-0 light-0 invisible'
       />
-      {imageUrls.map((imageUrl) => {
-        return <Image key={imageUrl.key} src={imageUrl.url} width={100} height={100} alt="画像" />
-      })}
     </div>
   );
 }

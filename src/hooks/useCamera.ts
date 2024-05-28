@@ -1,15 +1,10 @@
 import React, { useState } from 'react'
 import Webcam from "react-webcam";
-import { v4 as uuidv4 } from 'uuid';
-
-type Image = {
-  key: string
-  url: string
-}
 
 export const useCamera = () => {
-  const [imageUrls, setImageUrls] = useState<Array<Image>>([])
+  const [imageUrls, setImageUrls] = useState<Array<string>>([])
   const webcamRef = React.useRef<Webcam>(null);
+
   const capture = () => {
     const current = webcamRef.current;
     if (!current) {
@@ -19,8 +14,25 @@ export const useCamera = () => {
     if (!url) {
       return;
     }
-    setImageUrls([...imageUrls, {key: uuidv4(), url}])
+    setImageUrls([...imageUrls, url])
   }
-  return { webcamRef, capture, imageUrls }
+
+  const stopCamera = () => {
+    const current = webcamRef.current;
+    if (!current || !current.video) {
+      return;
+    }
+    const stream = current.video.srcObject as MediaStream | null
+    if (!stream) {
+      return;
+    }
+    const tracks = stream.getTracks();
+    tracks.forEach((track) => {
+      track.stop();
+    });
+    current.video.srcObject = null;
+  };
+
+  return { webcamRef, capture, stopCamera, imageUrls }
 }
 
